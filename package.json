@@ -1,0 +1,26 @@
+{
+  "name": "node-otp-auth-server",
+  "version": "1.0.0",
+  "description": "Node.js authentication server with OTP via email and localStorage verification.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "authentication",
+    "otp",
+    "email",
+    "nodemailer",
+    "render",
+    "github"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "nodemailer": "^6.9.13"
+  }
+}

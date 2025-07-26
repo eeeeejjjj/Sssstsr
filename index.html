@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Node.js OTP Authentication</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            background-color: #f4f4f4; 
+            margin: 0; 
+            color: #333;
+        }
+        .container { 
+            background: white; 
+            padding: 40px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); 
+            text-align: center; 
+            max-width: 500px; 
+            width: 90%; 
+        }
+        h1 { 
+            color: #333; 
+            margin-bottom: 20px; 
+        }
+        p {
+            color: #666;
+            margin-bottom: 25px;
+        }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            color: #555; 
+            text-align: left;
+        }
+        input[type="email"] { 
+            width: calc(100% - 22px); /* Account for padding and border */
+            padding: 10px; 
+            margin-bottom: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 16px; 
+        }
+        button { 
+            background-color: #007bff; 
+            color: white; 
+            padding: 12px 25px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 18px; 
+            transition: background-color 0.3s ease; 
+        }
+        button:hover { 
+            background-color: #0056b3; 
+        }
+        #responseContainer { 
+            margin-top: 30px; 
+            /* This will house the OTP modal from the server response */
+        }
+        .loading-message {
+            color: #007bff;
+            font-style: italic;
+        }
+        .error-message {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Request OTP for Authentication</h1>
+        <p>Enter your email address below to receive a 16-digit One-Time Password for verification.</p>
+        <form id="otpRequestForm">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" placeholder="your.email@example.com" required>
+            <button type="submit">Request OTP</button>
+        </form>
+        <div id="responseContainer">
+            <!-- The OTP form/modal will be injected here by the JavaScript below -->
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('otpRequestForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const email = document.getElementById('email').value;
+            const responseContainer = document.getElementById('responseContainer');
+
+            // Show a loading message
+            responseContainer.innerHTML = '<p class="loading-message">Sending OTP to your email... Please wait.</p>';
+
+            try {
+                const response = await fetch('/request-otp', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email: email })
+                });
+
+                if (response.ok) {
+                    const htmlContent = await response.text();
+                    responseContainer.innerHTML = htmlContent;
+
+                    // Manually execute scripts within the injected HTML.
+                    // When injecting HTML using innerHTML, scripts are generally not executed automatically.
+                    // This finds any script tags in the new content and re-appends them to make them run.
+                    const scripts = responseContainer.querySelectorAll('script');
+                    scripts.forEach(s => {
+                        const script = document.createElement('script');
+                        // Copy attributes and content
+                        Array.from(s.attributes).forEach(attr => script.setAttribute(attr.name, attr.value));
+                        script.textContent = s.textContent;
+                        
+                        // Append to the document body to ensure execution.
+                        // Removing the original 's' might not be needed if it's already part of innerHTML that gets replaced.
+                        document.body.appendChild(script);
+                    });
+
+                } else {
+                    const errorText = await response.text();
+                    responseContainer.innerHTML = `<p class="error-message">Error: ${errorText}</p>`;
+                }
+            } catch (error) {
+                console.error('Error requesting OTP:', error);
+                responseContainer.innerHTML = `<p class="error-message">Failed to connect to server. Please check your internet connection or try again later.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
